@@ -25,7 +25,7 @@ def main():
 
 def str_form(dados_servidor):
     if dados_servidor.Admitido:
-        adm = 1
+        adm = dados_servidor.processo
     else:
         adm = 0
     
