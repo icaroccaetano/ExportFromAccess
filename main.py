@@ -1,9 +1,12 @@
 from app.database.access_db import get_df
 from app.database.bigdata_db import get_engine
 from sqlalchemy import text
+from datetime import datetime
+
+#from app.models.base.DadosConcurso import DadosPS2022
 
 def main():
-    dados_servidores = get_df("SELECT * FROM DadosServidor")
+    dados_servidores = get_df("SELECT Nome_Canidato, CPF, Cidade, Cargo, AGENDAMENTO_TURMA, LISTA, VINCULO, DATA_EFETIVO_EXERCICIO, DATA_POSSE, PROCESSON FROM DADOS")
     engine = get_engine()
     i = 0
     with engine.connect() as connection:
@@ -24,19 +27,23 @@ def main():
             
 
 def str_form(dados_servidor):
-    if dados_servidor.Admitido:
-        adm = dados_servidor.processo
-    else:
-        adm = 0
+    if not dados_servidor.PROCESSON:
+        SQL = f"""
+        INSERT INTO SGDP_SISTEMA_REGISTRO_DE_ADMISSAO 
+        (nome, cpf, regiao, materia, turma, lista) 
+        VALUES 
+        ('{dados_servidor.Nome_Canidato}','{dados_servidor.CPF}', '{dados_servidor.Cidade}','{dados_servidor.Cargo}','{dados_servidor.AGENDAMENTO_TURMA}',{dados_servidor.LISTA})
+        """
+    elif not dados_servidor.DATA_POSSE: #se nao tem uma das datas tem a outra 
+        SQL = f"""
+        INSERT INTO SGDP_SISTEMA_REGISTRO_DE_ADMISSAO 
+        (nome, cpf, regiao, materia, turma, lista, processo_sei) 
+        VALUES 
+        ('{dados_servidor.Nome_Canidato}','{dados_servidor.CPF}', '{dados_servidor.Cidade}','{dados_servidor.Cargo}','{dados_servidor.AGENDAMENTO_TURMA}',{dados_servidor.LISTA},'{dados_servidor.PROCESSON}')
+        """
+
     
-    if dados_servidor.Status and dados_servidor.ProcessoSEI:
-        SQL = f"INSERT INTO SGDP_DADOS_PS2022 (nome, cpf, processo, status, admitido) VALUES ('{dados_servidor.Nome}','{dados_servidor.CPF}', '{dados_servidor.ProcessoSEI}', '{dados_servidor.Status}', {adm})"
-    elif dados_servidor.Status:
-        SQL = f"INSERT INTO SGDP_DADOS_PS2022 (nome, cpf, status, admitido) VALUES ('{dados_servidor.Nome}','{dados_servidor.CPF}', '{dados_servidor.Status}', {adm})"
-    elif dados_servidor.ProcessoSEI:
-        SQL = f"INSERT INTO SGDP_DADOS_PS2022 (nome, cpf, processo, admitido) VALUES ('{dados_servidor.Nome}','{dados_servidor.CPF}', '{dados_servidor.ProcessoSEI}', {adm})"
-    else:
-        SQL = f"INSERT INTO SGDP_DADOS_PS2022 (nome, cpf, admitido) VALUES ('{dados_servidor.Nome}','{dados_servidor.CPF}', {adm})"
+
     return SQL
 
 if __name__ == "__main__":

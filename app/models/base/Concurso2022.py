@@ -7,7 +7,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 # Imports locais
 from app.config.db import db
-
 class Concurso2022(db.Model):
     __tablename__ = 'SGDP_SISTEMA_CONCURSO_PROCESSOS'
 
